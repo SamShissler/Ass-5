@@ -3,10 +3,12 @@ package com.example.samuelshissler.motiontrackinginclass;
         import android.os.Bundle;
         import android.support.design.widget.FloatingActionButton;
         import android.support.design.widget.Snackbar;
+        import android.support.design.widget.TextInputEditText;
         import android.support.v7.app.AppCompatActivity;
         import android.support.v7.widget.Toolbar;
         import android.util.Log;
         import android.view.View;
+        import android.widget.EditText;
         import android.widget.TextView;
         import android.widget.Toast;
 
@@ -51,6 +53,9 @@ public class LoadADFActivity extends AppCompatActivity implements View.OnClickLi
     TextView isLocalizedView;
     TextView poseView;
 
+    EditText xCoord;
+    EditText yCoord;
+
     @Override
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -61,6 +66,8 @@ public class LoadADFActivity extends AppCompatActivity implements View.OnClickLi
         howdy = (TextView) findViewById(R.id.textView);
         isLocalizedView = (TextView) findViewById(R.id.textView2);
         poseView = (TextView) findViewById(R.id.textView3);
+        xCoord = (EditText) findViewById(R.id.editText2);
+        yCoord = (EditText) findViewById(R.id.editText3);
         howdy.setText("HOWDY");
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -125,6 +132,18 @@ public class LoadADFActivity extends AppCompatActivity implements View.OnClickLi
     @Override
     public void onClick(View view){
 
+        double x = -1.5;
+        double y = -1.2;
+
+        if(!xCoord.getText().equals("")) {
+            x = Double.parseDouble(xCoord.getText().toString());
+        }
+        if(!yCoord.getText().equals("")) {
+            y = Double.parseDouble(yCoord.getText().toString());
+        }
+
+        coordinates = new Coordinates(x, y);
+
         //if(mIsRelocalized == true) {
             Driver.drive(LoadADFActivity.this);
         //}
@@ -155,9 +174,9 @@ public class LoadADFActivity extends AppCompatActivity implements View.OnClickLi
         //framePairs.add(new TangoCoordinateFramePair(
         //        TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE,
         //        TangoPoseData.COORDINATE_FRAME_DEVICE));
-        //framePairs.add(new TangoCoordinateFramePair(
-        //        TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION,
-        //        TangoPoseData.COORDINATE_FRAME_DEVICE));
+        framePairs.add(new TangoCoordinateFramePair(
+                TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION,
+                TangoPoseData.COORDINATE_FRAME_DEVICE));
         framePairs.add(new TangoCoordinateFramePair(
               TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION,
               TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE));
@@ -227,7 +246,7 @@ public class LoadADFActivity extends AppCompatActivity implements View.OnClickLi
                                 //getString(R.string.not_localized));
                                 //Log.i(TAG, ""+mIsRelocalized);
                                 howdy.setText(status);
-                                //poseView.setText("YAW: "+ getYaw()+"\nDistance: " +getDistanceToCoordinates(coordinates));
+                                poseView.setText("YAW: "+ getYaw()+"\nDistance: " +getDistanceToCoordinates(coordinates));
                                 isLocalizedView.setText(fullUUIDString + "\n\n"+(mPose.statusCode == TangoPoseData.POSE_VALID) +"\n\nIs Localized = "+mIsRelocalized);
                             }
                         }
@@ -352,32 +371,6 @@ public class LoadADFActivity extends AppCompatActivity implements View.OnClickLi
         return mPose.translation[1];
     }
 
-    /*public void setMPose(TangoPoseData mPose) {
-        this.mPose = mPose;
-        TangoPoseData convertMPose = this.mPose;
-        convertCameraCoordinatesToWorldCoordinates(convertMPose);
-    }*/
-
-    // Convert the tango (camera) coordinates to world coordinates
-    /*private void convertCameraCoordinatesToWorldCoordinates(TangoPoseData mPose) {
-        double cameraX = mPose.translation[TangoPoseData.INDEX_TRANSLATION_X];
-        double cameraY = mPose.translation[TangoPoseData.INDEX_TRANSLATION_Y];
-
-        double rotationAngle = cameraCoordinatesToWorldCoordinatesRotation;
-
-        Coordinates rotatedCameraCoordinates = new Coordinates((Math.cos(rotationAngle) * cameraX) - (Math.sin(rotationAngle) * cameraY),
-                (Math.sin(rotationAngle) * cameraX) + (Math.cos(rotationAngle) * cameraY));
-
-        double rotatedCameraX = rotatedCameraCoordinates.getX();
-        double rotatedCameraY = rotatedCameraCoordinates.getY();
-
-        double translatedRotatedCameraX = rotatedCameraX + tangoXTranslationAdjustment;
-        double translatedRotatedCameraY = rotatedCameraY + tangoYTranslationAdjustment;
-
-        xTranslation = translatedRotatedCameraX;
-        yTranslation = translatedRotatedCameraY;
-    }*/
-
 
     public double getYaw() {
         // Quaternion vector components
@@ -392,6 +385,8 @@ public class LoadADFActivity extends AppCompatActivity implements View.OnClickLi
         double yaw = Math.toDegrees(Math.atan2((2 * ((x * y) + (z * w))),
                 (Math.pow(w, 2) + Math.pow(x, 2) -
                         Math.pow(y, 2) - Math.pow(z, 2))));
+
+        yaw+=90;
 
         if (yaw < 0) {
             yaw += 360;

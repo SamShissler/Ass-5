@@ -23,7 +23,7 @@ public class Driver {
                         //loadADFActivity.howdy.setText(loadADFActivity.status);
                         //Log.i(loadADFActivity.TAG, loadADFActivity.status);
                         try {
-                            TimeUnit.MILLISECONDS.sleep(100);
+                            TimeUnit.MILLISECONDS.sleep(20);
                         } catch (InterruptedException ie) {
                             Log.i(loadADFActivity.TAG, "INTERRUPTED");
                         }
