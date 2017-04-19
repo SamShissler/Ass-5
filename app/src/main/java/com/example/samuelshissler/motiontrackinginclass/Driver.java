@@ -10,27 +10,27 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class Driver {
-    public static void drive(final MainActivity mainActivity){
+    public static void drive(final LoadADFActivity loadADFActivity){
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while (!mainActivity.hasArrivedAtCoordinates(mainActivity.coordinates)) {
-                    //synchronized (MainActivity.this) {
+                while (!loadADFActivity.hasArrivedAtCoordinates(loadADFActivity.coordinates)) {
+                    //synchronized (LearnADFActivity.this) {
                         //while(true) {
                         //Log.i(TAG, "YOLO");
-                        mainActivity.driveToCoordinates(mainActivity.coordinates);
-                        //mainActivity.status = mainActivity.getYaw() + "";
-                        //mainActivity.howdy.setText(mainActivity.status);
-                        //Log.i(mainActivity.TAG, mainActivity.status);
+                        loadADFActivity.driveToCoordinates(loadADFActivity.coordinates);
+                        //loadADFActivity.status = loadADFActivity.getYaw() + "";
+                        //loadADFActivity.howdy.setText(loadADFActivity.status);
+                        //Log.i(loadADFActivity.TAG, loadADFActivity.status);
                         try {
-                            TimeUnit.MILLISECONDS.sleep(100);
+                            TimeUnit.MILLISECONDS.sleep(20);
                         } catch (InterruptedException ie) {
-                            Log.i(mainActivity.TAG, "INTERRUPTED");
+                            Log.i(loadADFActivity.TAG, "INTERRUPTED");
                         }
                         //}
                     //}
                 }
-                mainActivity.status = "ARRIVED!!!";
+                loadADFActivity.status = "ARRIVED!!!";
             }
         }).start();
     }

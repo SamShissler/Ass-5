@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.samuelshissler.motiontrackinginclass.LearnADFActivity">
+    tools:context="com.example.samuelshissler.motiontrackinginclass.LoadADFActivity">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
@@ -14,39 +14,38 @@
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
+            android:layout_height="0dp"
             android:background="?attr/colorPrimary"
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
+        <EditText
+            android:id="@+id/editText3"
+            android:layout_width="230dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:text="Ycoordinate" />
+
+        <EditText
+            android:id="@+id/editText2"
+            android:layout_width="309dp"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:text="Xcoordinate"
+            app:layout_constraintVertical_bias="0.423" />
+
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_main"
-        android:id="@+id/include" />
+    <include layout="@layout/content_load_adf" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
-        android:layout_width="136dp"
-        android:layout_height="123dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         app:srcCompat="@android:drawable/ic_dialog_email" />
-
-    <Switch
-        android:id="@+id/LoadADF"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|left"
-        android:text="Load ADF"
-        app:layout_anchor="@+id/include"
-        app:layout_anchorGravity="top|center_horizontal" />
-
-    <Switch
-        android:id="@+id/LearningMode"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|right"
-        android:text="Learning Mode"
-        app:layout_anchor="@+id/include"
-        app:layout_anchorGravity="top|center_horizontal" />
 
 </android.support.design.widget.CoordinatorLayout>

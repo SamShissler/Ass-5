@@ -13,12 +13,10 @@ import com.google.atap.tangoservice.TangoPoseData;
 import com.google.atap.tangoservice.TangoXyzIjData;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
@@ -27,10 +25,8 @@ import android.view.MenuItem;
 import android.widget.*;
 
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
-public class MainActivity extends AppCompatActivity implements SetAdfNameDialog.CallbackListener, SaveAdfTask.SaveAdfListener{
+public class LearnADFActivity extends AppCompatActivity implements SetAdfNameDialog.CallbackListener, SaveAdfTask.SaveAdfListener, View.OnClickListener{
 
     String TAG = "SAMUEL.L.SHISSLER";
 
@@ -54,6 +50,8 @@ public class MainActivity extends AppCompatActivity implements SetAdfNameDialog.
     private boolean mIsLearningMode = true;
     private boolean mIsConstantSpaceRelocalize;
 
+    public TangoPoseData mPose = new TangoPoseData();
+
     // Long-running task to save the ADF.
     private SaveAdfTask mSaveAdfTask;
 
@@ -61,10 +59,8 @@ public class MainActivity extends AppCompatActivity implements SetAdfNameDialog.
 
     private final Object mSharedLock = new Object();
 
-    TextView howdy;
     TextView isLocalizedView;
-    TextView poseView;
-    public TangoPoseData mPose = new TangoPoseData();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,112 +71,22 @@ public class MainActivity extends AppCompatActivity implements SetAdfNameDialog.
 
         adfSwitch = (Switch) findViewById(R.id.LoadADF);
         learningSwitch = (Switch) findViewById(R.id.LearningMode);
-        howdy = (TextView) findViewById(R.id.textView);
         isLocalizedView = (TextView) findViewById(R.id.textView2);
-        poseView = (TextView) findViewById(R.id.textView3);
-        howdy.setText("HOWDY");
-
-
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //View adf = findViewById(R.id.LoadADF);
-                if (adfBool) {
-                    Snackbar.make(view, adfBool + "ADFBOOLOOLOOLOO", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-
-                    ArrayList<String> fullUUIDList = new ArrayList<String>();
-                    // Returns a list of ADFs with their UUIDs
-                    fullUUIDList = mTango.listAreaDescriptions();
-
-                    // Load the latest ADF if ADFs are found.
-                    if (fullUUIDList.size() > 0) {
-                        /*try {
-                            mConfig = setTangoConfig(
-                                    mTango, false, true);
-                            mTango.connect(mConfig);
-                            startupTango();
-                        } catch (TangoOutOfDateException e) {
-                            Log.e(TAG, "tango_out_of_date_exception", e);
-                        } catch (TangoErrorException e) {
-                            Log.e(TAG, "tango_error", e);
-                        } catch (TangoInvalidException e) {
-                            Log.e(TAG, "tango_invalid", e);
-                        } catch (SecurityException e) {
-                            // Area Learning permissions are required. If they are not available,
-                            // SecurityException is thrown.
-                            Log.e(TAG, "no_permissions", e);
-                        }*/
-
-                        mConfig.putString(TangoConfig.KEY_STRING_AREADESCRIPTION,
-                                fullUUIDList.get(fullUUIDList.size() - 1));
-                        Toast.makeText(MainActivity.this, fullUUIDList.get(fullUUIDList.size() - 1).toString(), Toast.LENGTH_SHORT).show();
-                        mIsRelocalized = false;
-                    }
-
-
-
-                }
-                else if (learningBool) {
-                    Snackbar.make(view, learningBool + "LearningBool", Snackbar.LENGTH_LONG)
-                            .setAction("Action", null).show();
-
-                    if(!learnedBool) {
-
-                        try {
-                            mConfig.putString(TangoConfig.KEY_STRING_AREADESCRIPTION, "SamsSuperCoolADF");
-                        } catch (TangoErrorException e) {
-                            // handle exception
-                        }
-                        try {
-                            TangoConfig mConfig = mTango.getConfig(TangoConfig.CONFIG_TYPE_CURRENT);
-                            mConfig.putBoolean(TangoConfig.KEY_BOOLEAN_LEARNINGMODE, true);
-                        } catch (TangoErrorException e) {
-                            // handle exception
-                        }
-                        learnedBool = true;
-                    }else{
-                        learnedBool = false;
-                        try {
-                            mConfig = setTangoConfig(
-                                    mTango, true, false);
-                            mTango.connect(mConfig);
-                            startupTango();
-                        } catch (TangoOutOfDateException e) {
-                            Log.e(TAG, "tango_out_of_date_exception", e);
-                        } catch (TangoErrorException e) {
-                            Log.e(TAG, "tango_error", e);
-                        } catch (TangoInvalidException e) {
-                            Log.e(TAG, "tango_invalid", e);
-                        } catch (SecurityException e) {
-                            // Area Learning permissions are required. If they are not available,
-                            // SecurityException is thrown.
-                            Log.e(TAG, "no_permissions", e);
-                        }
-                        saveAdf("SamsSuperCoolADF.adf");
-                    }
-                }
-                else{
-                    Log.i(TAG, "TeTSST");
-                    Driver.drive(MainActivity.this);
-
-                }
-            }
-        });
+        fab.setOnClickListener(this);
         adfSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 adfBool = isChecked;
-                //Toast.makeText(MainActivity.this, "The Switch is ", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(LearnADFActivity.this, "The Switch is ", Toast.LENGTH_SHORT).show();
             }
         });
         learningSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 learningBool = isChecked;
-                //Toast.makeText(MainActivity.this, "The Switch is not", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(LearnADFActivity.this, "The Switch is not", Toast.LENGTH_SHORT).show();
             }
         });
         startActivityForResult(
@@ -211,17 +117,17 @@ public class MainActivity extends AppCompatActivity implements SetAdfNameDialog.
         // Initialize Tango Service as a normal Android Service. Since we call mTango.disconnect()
         // in onPause, this will unbind Tango Service, so every time onResume gets called we
         // should create a new Tango object.
-        mTango = new Tango(MainActivity.this, new Runnable() {
+        mTango = new Tango(LearnADFActivity.this, new Runnable() {
             // Pass in a Runnable to be called from UI thread when Tango is ready; this Runnable
             // will be running on a new thread.
             // When Tango is ready, we can call Tango functions safely here only when there are no
             // UI thread changes involved.
             @Override
             public void run() {
-                synchronized (MainActivity.this) {
+                synchronized (LearnADFActivity.this) {
                     try {
                         mConfig = setTangoConfig(
-                                mTango, false, true);
+                                mTango, mIsRelocalized, mIsConstantSpaceRelocalize);
                         mTango.connect(mConfig);
                         startupTango();
                     } catch (TangoOutOfDateException e) {
@@ -240,7 +146,7 @@ public class MainActivity extends AppCompatActivity implements SetAdfNameDialog.
                 /*runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        synchronized (MainActivity.this) {
+                        synchronized (LearnADFActivity.this) {
                             setupTextViewsAndButtons(mTango, mIsLearningMode,
                                     mIsConstantSpaceRelocalize);
                         }
@@ -248,6 +154,38 @@ public class MainActivity extends AppCompatActivity implements SetAdfNameDialog.
                 });*/
             }
         });
+    }
+
+    @Override
+    public void onClick(View view) {
+        //View adf = findViewById(R.id.LoadADF);
+        if (adfBool) {
+            Intent myIntent = new Intent(this, LoadADFActivity.class);
+            startActivity(myIntent);
+        }
+        else if (learningBool) {
+            Snackbar.make(view, learningBool + "LearningBool", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+
+            if (!learnedBool) {
+
+                try {
+                    mConfig.putString(TangoConfig.KEY_STRING_AREADESCRIPTION, "SamsSuperCoolADF");
+                } catch (TangoErrorException e) {
+                    // handle exception
+                }
+                try {
+                    TangoConfig mConfig = mTango.getConfig(TangoConfig.CONFIG_TYPE_CURRENT);
+                    mConfig.putBoolean(TangoConfig.KEY_BOOLEAN_LEARNINGMODE, true);
+                } catch (TangoErrorException e) {
+                    // handle exception
+                }
+                learnedBool = true;
+            } else {
+                learnedBool = false;
+                saveAdf("SamsSuperCoolADF.adf");
+            }
+        }
     }
 
     /**
@@ -258,22 +196,8 @@ public class MainActivity extends AppCompatActivity implements SetAdfNameDialog.
         // Use default configuration for Tango Service.
         TangoConfig config = tango.getConfig(TangoConfig.CONFIG_TYPE_DEFAULT);
         // Check if learning mode.
-        if (isLearningMode) {
-            // Set learning mode to config.
-            config.putBoolean(TangoConfig.KEY_BOOLEAN_LEARNINGMODE, true);
+        config.putBoolean(TangoConfig.KEY_BOOLEAN_LEARNINGMODE, true);
 
-        }
-        // Check for Load ADF/Constant Space relocalization mode.
-        if (isLoadAdf) {
-            ArrayList<String> fullUuidList;
-            // Returns a list of ADFs with their UUIDs.
-            fullUuidList = tango.listAreaDescriptions();
-            // Load the latest ADF if ADFs are found.
-            if (fullUuidList.size() > 0) {
-                config.putString(TangoConfig.KEY_STRING_AREADESCRIPTION,
-                        fullUuidList.get(fullUuidList.size() - 1));
-            }
-        }
         return config;
     }
 
@@ -291,9 +215,9 @@ public class MainActivity extends AppCompatActivity implements SetAdfNameDialog.
         framePairs.add(new TangoCoordinateFramePair(
                 TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION,
                 TangoPoseData.COORDINATE_FRAME_DEVICE));
-        framePairs.add(new TangoCoordinateFramePair(
-                TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION,
-                TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE));
+        //framePairs.add(new TangoCoordinateFramePair(
+          //      TangoPoseData.COORDINATE_FRAME_AREA_DESCRIPTION,
+            //    TangoPoseData.COORDINATE_FRAME_START_OF_SERVICE));
 
         ArrayList<String> fullUUID = mTango.listAreaDescriptions();
         for(String uuid : fullUUID){
@@ -351,8 +275,8 @@ public class MainActivity extends AppCompatActivity implements SetAdfNameDialog.
                                 //getString(R.string.localized) :
                                 //getString(R.string.not_localized));
                                 //Log.i(TAG, ""+mIsRelocalized);
-                                howdy.setText(status);
-                                poseView.setText("YAW: "+ getYaw()+"\nDistance: " +getDistanceToCoordinates(coordinates));
+                                //howdy.setText(status);
+                                //poseView.setText("YAW: "+ getYaw()+"\nDistance: " +getDistanceToCoordinates(coordinates));
                                 isLocalizedView.setText(fullUUIDString + "\n\n"+(mPose.statusCode == TangoPoseData.POSE_VALID) +"\n\nIs Localized = "+mIsRelocalized);
                             }
                         }
@@ -446,162 +370,5 @@ public class MainActivity extends AppCompatActivity implements SetAdfNameDialog.
 
 
 
-    String status = "Ststss";
 
-    // Distance and angle tolerances
-    private final double DISTANCE_TOLERANCE = 0.5;
-    private final double ANGLE_TOLERANCE = 10.0;
-
-    public void driveToCoordinates(Coordinates coordinates) {
-        double distance = getDistanceToCoordinates(coordinates);
-        double actualAngleToCoordinates = getActualAngleToCoordinates(coordinates);
-
-        boolean withinDistanceTolerance = distance < DISTANCE_TOLERANCE;
-        boolean withinAngleTolerance = Math.abs(actualAngleToCoordinates) < ANGLE_TOLERANCE;
-
-        if (withinDistanceTolerance) {
-            // Arrived at coordinates
-            status = "At " + coordinates.toString();
-            return;
-        }
-
-        if (withinAngleTolerance) {
-            status = "Go Straight";
-            //status = "Going straight at " + Double.toString(actualAngleToCoordinates) + " to get to " + coordinates.toString();
-            //driveForward(motorSpeed);
-        } else {
-            if (actualAngleToCoordinates < 0) {
-                status = "Turn Left";
-                //status = "Turning left at " + Double.toString(actualAngleToCoordinates) + " to get to " + coordinates.toString();
-                //driveLeft(motorSpeed);
-            } else {
-                status = "Turn Right";
-                //status = "Turning right at " + Double.toString(actualAngleToCoordinates) + " to get to " + coordinates.toString();
-                //driveRight(motorSpeed);
-            }
-        }
-    }
-
-    private double getDistanceToCoordinates(Coordinates coordinates) {
-        Coordinates currentPosition = new Coordinates(getXTranslation(),
-                getYTranslation());
-
-        double deltaX = coordinates.getX() - currentPosition.getX();
-        double deltaY = coordinates.getY() - currentPosition.getY();
-
-        double distance = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
-
-        return distance;
-    }
-
-    // Determine the angle that the robot must rotate;
-    private double getActualAngleToCoordinates(Coordinates coordinates) {
-        double yaw = getYaw();
-
-        double angleToCoordinates = getAngleToCoordinates(coordinates);
-
-        double actualAngleToCoordinates = yaw - angleToCoordinates;
-
-        if (actualAngleToCoordinates < 0) {
-            actualAngleToCoordinates += 360;
-        }
-
-        actualAngleToCoordinates %= 360;
-
-        if (actualAngleToCoordinates > 180) {
-            actualAngleToCoordinates = actualAngleToCoordinates - 360;
-        }
-
-        return actualAngleToCoordinates;
-    }
-
-    // Determine the angle between the current coordinates and the destination coordinates
-    private double getAngleToCoordinates(Coordinates coordinates) {
-        Coordinates currentPosition = new Coordinates(getXTranslation(),
-                getYTranslation());
-
-        double deltaX = coordinates.getX() - currentPosition.getX();
-        double deltaY = coordinates.getY() - currentPosition.getY();
-
-        double angle = Math.toDegrees(Math.atan2(deltaY, deltaX));
-
-        if (angle < 0) {
-            angle += 360;
-        }
-
-        angle = angle % 360;
-
-        return angle;
-    }
-
-    public double getXTranslation(){
-        return mPose.translation[0];
-    }
-    public double getYTranslation(){
-        return mPose.translation[1];
-    }
-
-    /*public void setMPose(TangoPoseData mPose) {
-        this.mPose = mPose;
-        TangoPoseData convertMPose = this.mPose;
-        convertCameraCoordinatesToWorldCoordinates(convertMPose);
-    }*/
-
-    // Convert the tango (camera) coordinates to world coordinates
-    /*private void convertCameraCoordinatesToWorldCoordinates(TangoPoseData mPose) {
-        double cameraX = mPose.translation[TangoPoseData.INDEX_TRANSLATION_X];
-        double cameraY = mPose.translation[TangoPoseData.INDEX_TRANSLATION_Y];
-
-        double rotationAngle = cameraCoordinatesToWorldCoordinatesRotation;
-
-        Coordinates rotatedCameraCoordinates = new Coordinates((Math.cos(rotationAngle) * cameraX) - (Math.sin(rotationAngle) * cameraY),
-                (Math.sin(rotationAngle) * cameraX) + (Math.cos(rotationAngle) * cameraY));
-
-        double rotatedCameraX = rotatedCameraCoordinates.getX();
-        double rotatedCameraY = rotatedCameraCoordinates.getY();
-
-        double translatedRotatedCameraX = rotatedCameraX + tangoXTranslationAdjustment;
-        double translatedRotatedCameraY = rotatedCameraY + tangoYTranslationAdjustment;
-
-        xTranslation = translatedRotatedCameraX;
-        yTranslation = translatedRotatedCameraY;
-    }*/
-
-
-    public double getYaw() {
-        // Quaternion vector components
-        double w = mPose.rotation[TangoPoseData.INDEX_ROTATION_W];
-        double x = mPose.rotation[TangoPoseData.INDEX_ROTATION_X];
-        double y = mPose.rotation[TangoPoseData.INDEX_ROTATION_Y];
-        double z = mPose.rotation[TangoPoseData.INDEX_ROTATION_Z];
-
-        //Log.d(TAG, "\tw\t"+w+"\tx\t"+x+"\ty\t"+y+"\tz\t"+z);
-
-        // Extract yaw from the quaternion vector components
-        double yaw = Math.toDegrees(Math.atan2((2 * ((x * y) + (z * w))),
-                (Math.pow(w, 2) + Math.pow(x, 2) -
-                        Math.pow(y, 2) - Math.pow(z, 2))));
-
-        if (yaw < 0) {
-            yaw += 360;
-        }
-
-        //yaw += tangoAngleAdjustment;
-
-        yaw = yaw % 360;
-
-        return yaw;
-    }
-
-    public boolean hasArrivedAtCoordinates(Coordinates coordinates) {
-        double distance = getDistanceToCoordinates(coordinates);
-
-        boolean withinDistanceTolerance = distance < DISTANCE_TOLERANCE;
-
-        if (withinDistanceTolerance) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 }
